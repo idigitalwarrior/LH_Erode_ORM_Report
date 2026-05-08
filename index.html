@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lotus Hyundai — Review Intelligence Report</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Manrope','sans-serif'] },
+        colors: {
+          navy:  '#002C5F',
+          cyan:  '#00AAD2',
+          navylt:'#004B8D',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Manrope',sans-serif;background:#F7F9FC;color:#002C5F}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:#eef2fa}
+  ::-webkit-scrollbar-thumb{background:#00AAD2;border-radius:3px}
+
+  /* ── Gradients ── */
+  .grad-navy{background:linear-gradient(135deg,#002C5F 0%,#004B8D 50%,#00AAD2 100%)}
+  .grad-light{background:linear-gradient(135deg,#E8F4FD,#F0FAFE)}
+  .grad-red{background:linear-gradient(135deg,#E63312,#FF5533)}
+  .grad-gold{background:linear-gradient(135deg,#F5A623,#FFBB44)}
+  .grad-teal{background:linear-gradient(135deg,#00AAD2,#00CCEE)}
+  .grad-dark{background:linear-gradient(90deg,#002C5F,#004B8D)}
+
+  /* ── Animations ── */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes ping{75%,100%{transform:scale(1.8);opacity:0}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  @keyframes scanDown{from{top:-60px}to{top:100%}}
+  @keyframes countUp{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+  @keyframes barGrow{from{width:0}to{width:var(--tw)}}
+  @keyframes modalIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+
+  .anim-fadeup{opacity:0;animation:fadeUp .7s cubic-bezier(.22,1,.36,1) forwards}
+  .anim-float{animation:float 3s ease-in-out infinite}
+  .anim-spin{animation:spin 18s linear infinite}
+  .ping-dot{animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite}
+  .modal-in{animation:modalIn .28s cubic-bezier(.22,1,.36,1) forwards}
+
+  /* ── Intersection observer driven ── */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1)}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+  .reveal-left{opacity:0;transform:translateX(-28px);transition:opacity .65s .1s cubic-bezier(.22,1,.36,1),transform .65s .1s cubic-bezier(.22,1,.36,1)}
+  .reveal-left.visible{opacity:1;transform:translateX(0)}
+  .reveal-right{opacity:0;transform:translateX(28px);transition:opacity .65s .1s cubic-bezier(.22,1,.36,1),transform .65s .1s cubic-bezier(.22,1,.36,1)}
+  .reveal-right.visible{opacity:1;transform:translateX(0)}
+
+  /* ── Cards ── */
+  .card-hover{transition:transform .25s ease,box-shadow .25s ease}
+  .card-hover:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,44,95,.14)}
+
+  /* ── Nav ── */
+  #topnav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(255,255,255,.93);border-bottom:1px solid rgba(0,44,95,.09);transition:padding .3s}
+
+  /* ── Pill tags ── */
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 11px;border-radius:999px;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+
+  /* ── Progress bar ── */
+  .pb-track{width:100%;height:8px;background:#e5eaf4;border-radius:99px;overflow:hidden}
+  .pb-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#002C5F,#00AAD2);width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+
+  /* ── Section heading ── */
+  .sec-head::after{content:'';display:block;width:52px;height:4px;border-radius:2px;background:linear-gradient(90deg,#002C5F,#00AAD2);margin-top:10px}
+
+  /* ── Modal ── */
+  #modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,20,50,.82);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:16px}
+  #modal-overlay.open{display:flex}
+  #modal-box{background:#fff;border-radius:20px;overflow:hidden;max-width:520px;width:100%;box-shadow:0 32px 80px rgba(0,0,0,.3)}
+
+  /* ── Keyword pill ── */
+  .kw{display:inline-flex;align-items:center;padding:5px 13px;border-radius:999px;font-size:.78rem;font-weight:600;margin:3px;cursor:default;transition:transform .18s}
+  .kw:hover{transform:scale(1.06)}
+
+  /* ── Ring decorations ── */
+  .ring-deco{position:absolute;border:1px solid rgba(255,255,255,.1);border-radius:50%}
+
+  /* ── Verdict box ── */
+  .verdict-box{background:linear-gradient(135deg,#002C5F,#004B8D);border-radius:20px;padding:32px}
+
+  /* ── Table row hover ── */
+  tbody tr:hover{background:rgba(0,170,210,.06);cursor:pointer}
+
+  /* ── Sticky active nav pill ── */
+  .nav-btn{padding:6px 14px;border-radius:8px;font-size:.84rem;font-weight:600;color:#555;transition:all .2s;border:none;background:none;cursor:pointer}
+  .nav-btn.active{background:#002C5F;color:#fff}
+  .nav-btn:hover:not(.active){background:#f0f4fa}
+
+  /* ── Responsive ── */
+  @media(max-width:640px){
+    .hide-mobile{display:none!important}
+    #hero-title{font-size:2.6rem!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ NAV ═══════════════════════════════════ -->
+<nav id="topnav" class="py-3">
+  <div class="max-w-6xl mx-auto px-5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <!-- Hyundai H logo SVG -->
+      <svg width="34" height="24" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M60 5C30.2 5 6 22.9 6 45C6 67.1 30.2 75 60 75C89.8 75 114 67.1 114 45C114 22.9 89.8 5 60 5ZM60 71C32.4 71 10 59.5 10 45C10 30.5 32.4 19 60 19C87.6 19 110 30.5 110 45C110 59.5 87.6 71 60 71Z" fill="#002C5F"/>
+        <path d="M38 25V65M82 25V65M38 45H82" stroke="#002C5F" stroke-width="9" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <p style="font-size:.72rem;font-weight:900;color:#002C5F;letter-spacing:.1em;line-height:1.2">LOTUS HYUNDAI</p>
+        <p style="font-size:.65rem;color:#999;font-weight:500;line-height:1.2">Review Intelligence</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-1 hide-mobile" id="nav-links">
+      <button class="nav-btn active" onclick="scrollTo('overview')">Overview</button>
+      <button class="nav-btn" onclick="scrollTo('reviews')">Reviews</button>
+      <button class="nav-btn" onclick="scrollTo('analysis')">Analysis</button>
+      <button class="nav-btn" onclick="scrollTo('evidence')">Evidence</button>
+      <button class="nav-btn" onclick="scrollTo('solution')">Solution</button>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="hide-mobile flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 rounded-full px-3 py-1.5" style="font-size:.72rem;font-weight:700">
+        <span class="relative flex" style="width:8px;height:8px">
+          <span class="ping-dot absolute inline-flex w-full h-full rounded-full bg-red-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full bg-red-500" style="width:8px;height:8px"></span>
+        </span>
+        Coordinated Activity Detected
+      </span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════ HERO ═══════════════════════════════════ -->
+<section class="grad-navy relative overflow-hidden" style="min-height:100vh;display:flex;align-items:center">
+  <!-- Rotating rings -->
+  <div class="ring-deco anim-spin" style="width:300px;height:300px;left:50%;top:50%;transform:translate(-50%,-50%)"></div>
+  <div class="ring-deco" style="width:480px;height:480px;left:50%;top:50%;transform:translate(-50%,-50%);animation:spin 26s linear infinite reverse"></div>
+  <div class="ring-deco anim-spin" style="width:660px;height:660px;left:50%;top:50%;transform:translate(-50%,-50%);animation-duration:34s"></div>
+  <div class="ring-deco" style="width:840px;height:840px;left:50%;top:50%;transform:translate(-50%,-50%);animation:spin 42s linear infinite reverse"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 py-24 text-center w-full">
+    <!-- Badge -->
+    <div class="anim-fadeup" style="animation-delay:.2s">
+      <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style="background:rgba(230,51,18,.18);border:1px solid rgba(230,51,18,.35);color:#fca5a5;font-size:.72rem;font-weight:700;letter-spacing:.08em">
+        🚨 REPUTATION INTELLIGENCE REPORT &nbsp;·&nbsp; CONFIDENTIAL ANALYSIS
+      </span>
+    </div>
+
+    <!-- Title -->
+    <h1 id="hero-title" class="anim-fadeup text-white font-black leading-tight tracking-tight mb-6" style="font-size:4.2rem;animation-delay:.4s">
+      Lotus Hyundai<br>
+      <span style="color:#00AAD2">Review Attack</span><br>
+      Deep Dive
+    </h1>
+
+    <!-- Sub -->
+    <p class="anim-fadeup mb-10" style="color:rgba(255,255,255,.65);font-size:1.05rem;max-width:580px;margin-left:auto;margin-right:auto;line-height:1.7;animation-delay:.6s">
+      A forensic analysis of 14 coordinated 1-star reviews targeting Lotus Hyundai, Erode — identifying patterns, actors, and a strategic ORM recovery plan.
+    </p>
+
+    <!-- Stat chips -->
+    <div class="anim-fadeup flex flex-wrap justify-center gap-4 mb-12" style="animation-delay:.8s">
+      <div class="rounded-2xl px-6 py-4 text-center" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);min-width:110px">
+        <div class="text-2xl mb-1">📋</div>
+        <div class="text-white font-black text-3xl counter" data-to="14">0</div>
+        <div style="color:rgba(255,255,255,.55);font-size:.72rem;margin-top:2px;font-weight:600">Reviews Analysed</div>
+      </div>
+      <div class="rounded-2xl px-6 py-4 text-center" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);min-width:110px">
+        <div class="text-2xl mb-1">❤️</div>
+        <div class="text-white font-black text-3xl counter" data-to="104">0</div>
+        <div style="color:rgba(255,255,255,.55);font-size:.72rem;margin-top:2px;font-weight:600">Total Likes</div>
+      </div>
+      <div class="rounded-2xl px-6 py-4 text-center" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);min-width:110px">
+        <div class="text-2xl mb-1">🔍</div>
+        <div class="text-white font-black text-3xl counter" data-to="6">0</div>
+        <div style="color:rgba(255,255,255,.55);font-size:.72rem;margin-top:2px;font-weight:600">Patterns Found</div>
+      </div>
+      <div class="rounded-2xl px-6 py-4 text-center" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);min-width:110px">
+        <div class="text-2xl mb-1">🛡️</div>
+        <div class="text-white font-black text-3xl counter" data-to="12">0</div>
+        <div style="color:rgba(255,255,255,.55);font-size:.72rem;margin-top:2px;font-weight:600">ORM Actions</div>
+      </div>
+    </div>
+
+    <div class="anim-fadeup" style="animation-delay:1s">
+      <button onclick="scrollTo('overview')" class="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-full transition-all" style="background:#00AAD2;box-shadow:0 8px 24px rgba(0,170,210,.4)">
+        View Full Analysis
+        <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M8 3l5 5-5 5M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-7 left-1/2 -translate-x-1/2 anim-float">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7" stroke="rgba(255,255,255,.45)" stroke-width="2" stroke-linecap="round"/></svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ OVERVIEW ═══════════════════════════════════ -->
+<section id="overview" class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="reveal mb-12">
+      <h2 class="sec-head text-3xl font-black text-[#002C5F] mb-2">Executive Overview</h2>
+      <p style="color:#888;max-width:500px;font-size:.95rem">Key metrics extracted from the 14 Google reviews targeting Lotus Hyundai, Erode (Perundurai Road).</p>
+    </div>
+
+    <!-- Big metric cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-16">
+      <div class="reveal card-hover grad-navy rounded-2xl p-5 text-white shadow-md">
+        <div class="text-3xl mb-2">📋</div>
+        <div class="font-black text-4xl counter-inline" data-to="14">0</div>
+        <p class="font-bold text-sm mt-1" style="opacity:.9">Total Reviews</p>
+        <p style="opacity:.55;font-size:.7rem;margin-top:2px">All 1-star rating</p>
+      </div>
+      <div class="reveal card-hover rounded-2xl p-5 text-white shadow-md" style="background:linear-gradient(135deg,#E63312,#FF5533);animation-delay:.1s">
+        <div class="text-3xl mb-2">🚨</div>
+        <div class="font-black text-4xl counter-inline" data-to="12">0</div>
+        <p class="font-bold text-sm mt-1" style="opacity:.9">Coordinated</p>
+        <p style="opacity:.55;font-size:.7rem;margin-top:2px">12 of 14 reviews</p>
+      </div>
+      <div class="reveal card-hover grad-gold rounded-2xl p-5 text-white shadow-md" style="animation-delay:.2s">
+        <div class="text-3xl mb-2">❤️</div>
+        <div class="font-black text-4xl counter-inline" data-to="104">0</div>
+        <p class="font-bold text-sm mt-1" style="opacity:.9">Total Likes</p>
+        <p style="opacity:.55;font-size:.7rem;margin-top:2px">Boosted artificially</p>
+      </div>
+      <div class="reveal card-hover grad-teal rounded-2xl p-5 text-white shadow-md" style="animation-delay:.3s">
+        <div class="text-3xl mb-2">⏱</div>
+        <div class="font-black text-4xl counter-inline" data-to="5">0</div>
+        <p class="font-bold text-sm mt-1" style="opacity:.9">Months Window</p>
+        <p style="opacity:.55;font-size:.7rem;margin-top:2px">All posted same period</p>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+      <!-- Complaint themes -->
+      <div class="reveal-left">
+        <h3 class="font-black text-[#002C5F] text-lg mb-5">Recurring Complaint Themes</h3>
+        <div id="pb-container"></div>
+      </div>
+      <!-- Pie chart -->
+      <div class="reveal-right">
+        <h3 class="font-black text-[#002C5F] text-lg mb-5">Review Authenticity Breakdown</h3>
+        <canvas id="pieChart" height="220"></canvas>
+        <div class="flex flex-wrap gap-4 mt-4">
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#E63312"></span><span style="font-size:.75rem;color:#555">Coordinated (10)</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#22C55E"></span><span style="font-size:.75rem;color:#555">Organic (2)</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full inline-block" style="background:#F5A623"></span><span style="font-size:.75rem;color:#555">Duplicates (2)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ REVIEWS ═══════════════════════════════════ -->
+<section id="reviews" class="py-20" style="background:#F7F9FC">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="reveal mb-10">
+      <h2 class="sec-head text-3xl font-black text-[#002C5F] mb-2">All 14 Reviews</h2>
+      <p style="color:#888;font-size:.95rem;max-width:500px">Click any review to expand and inspect. Tags indicate the nature of each review's origin.</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="review-grid"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ ANALYSIS ═══════════════════════════════════ -->
+<section id="analysis" class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="reveal mb-12">
+      <h2 class="sec-head text-3xl font-black text-[#002C5F] mb-2">Forensic Deep Analysis</h2>
+      <p style="color:#888;font-size:.95rem;max-width:480px">Six distinct manipulation signals identified across the review set.</p>
+    </div>
+    <div id="analysis-cards" class="space-y-5 mb-16"></div>
+
+    <!-- Charts row -->
+    <div class="grid md:grid-cols-2 gap-10 mt-12">
+      <div class="reveal-left">
+        <h3 class="font-black text-[#002C5F] text-xl mb-1">Sentiment Intensity Radar</h3>
+        <p style="color:#999;font-size:.85rem;margin-bottom:16px">Complaint theme intensity, scored 0–100 across reviews.</p>
+        <canvas id="radarChart" height="260"></canvas>
+      </div>
+      <div class="reveal-right">
+        <h3 class="font-black text-[#002C5F] text-xl mb-1">Like Count per Review</h3>
+        <p style="color:#999;font-size:.85rem;margin-bottom:16px">Suspiciously uniform — organic reviews show far more variance.</p>
+        <canvas id="barChart" height="260"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ EVIDENCE ═══════════════════════════════════ -->
+<section id="evidence" class="py-20" style="background:#F7F9FC">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="reveal mb-12">
+      <h2 class="sec-head text-3xl font-black text-[#002C5F] mb-2">Coordinated Campaign Evidence</h2>
+      <p style="color:#888;font-size:.95rem;max-width:520px">Organised but rooted in a real grievance. The campaign was launched by Praveen's social circle, not by a rival business.</p>
+    </div>
+
+    <!-- Verdict -->
+    <div class="verdict-box mb-10 reveal">
+      <div class="md:flex items-start gap-7">
+        <div class="text-5xl mb-4 md:mb-0">⚖️</div>
+        <div>
+          <h3 class="text-white font-black text-xl mb-2">Verdict: Social-Circle Amplification Campaign</h3>
+          <p style="color:rgba(255,255,255,.7);font-size:.88rem;line-height:1.75;max-width:680px">
+            This is <strong style="color:#fff">NOT</strong> an anonymous attack from a rival dealer. The origin is a real customer (<strong style="color:#00AAD2">Praveen Anandhan</strong>) who paid in full for a Hyundai Exter on <strong style="color:#fff">16.11.2025</strong> and faced a genuine delivery delay and model-swap pressure. He mobilised his personal network (~9 people) to post coordinated negative reviews on Google Maps using templated language, the "sister/friend" narrative wrapper, duplicate accounts, and artificial mutual likes to boost visibility.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Evidence table -->
+    <div class="reveal bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full" style="font-size:.85rem">
+          <thead>
+            <tr class="grad-dark">
+              <th class="text-white font-bold px-4 py-3 text-left">Reviewer</th>
+              <th class="text-white font-bold px-4 py-3 text-center hide-mobile">Reviews</th>
+              <th class="text-white font-bold px-4 py-3 text-center">Likes</th>
+              <th class="text-white font-bold px-4 py-3 text-left">Classification</th>
+              <th class="text-white font-bold px-4 py-3 text-left hide-mobile">Key Signal</th>
+            </tr>
+          </thead>
+          <tbody id="evidence-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ SOLUTION ═══════════════════════════════════ -->
+<section id="solution" class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="reveal mb-12">
+      <h2 class="sec-head text-3xl font-black text-[#002C5F] mb-2">ORM Recovery Strategy</h2>
+      <p style="color:#888;font-size:.95rem;max-width:520px">A tactical roadmap to counteract the coordinated review campaign and build long-term positive SEO equity for Lotus Hyundai.</p>
+    </div>
+
+    <!-- Review count targets -->
+    <div class="reveal rounded-2xl p-8 mb-12" style="background:#F0FAFE;border:2px solid rgba(0,170,210,.25)">
+      <div class="md:flex items-start gap-8">
+        <div class="text-6xl mb-4 md:mb-0">🎯</div>
+        <div class="flex-1">
+          <h3 class="font-black text-[#002C5F] text-xl mb-2">How Many Positive Reviews Are Needed?</h3>
+          <p style="color:#555;font-size:.88rem;line-height:1.7;margin-bottom:20px">To recover from ~1.5–2.0★ to the automotive trust threshold, here are the minimum positive review targets:</p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl p-4 text-center border" style="border-color:rgba(0,170,210,.2)">
+              <p class="font-black text-[#002C5F] text-2xl">42+</p>
+              <p class="font-bold text-[#00AAD2] text-sm">4.0★ Target</p>
+              <p style="font-size:.7rem;color:#aaa;margin-top:2px">Minimum trust floor</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center border" style="border-color:rgba(0,170,210,.2)">
+              <p class="font-black text-[#002C5F] text-2xl">55+</p>
+              <p class="font-bold text-[#00AAD2] text-sm">4.2★ Target</p>
+              <p style="font-size:.7rem;color:#aaa;margin-top:2px">Good dealership</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center border" style="border-color:rgba(0,170,210,.2)">
+              <p class="font-black text-[#002C5F] text-2xl">80+</p>
+              <p class="font-bold text-[#00AAD2] text-sm">4.5★ Target</p>
+              <p style="font-size:.7rem;color:#aaa;margin-top:2px">Top dealership tier</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 text-center border" style="border-color:rgba(0,170,210,.2)">
+              <p class="font-black text-[#002C5F] text-2xl">140+</p>
+              <p class="font-bold text-[#00AAD2] text-sm">4.8★ Target</p>
+              <p style="font-size:.7rem;color:#aaa;margin-top:2px">Premium brand status</p>
+            </div>
+          </div>
+          <p style="font-size:.72rem;color:#bbb;margin-top:12px">* Based on weighted average formula. Assumes current base of ~30 reviews.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action phases -->
+    <div class="grid md:grid-cols-3 gap-6 mb-14">
+      <div class="reveal card-hover rounded-2xl p-6 border-2 border-red-300" style="background:#FFF5F4;animation-delay:.1s">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-3xl">🚨</span>
+          <div>
+            <p class="font-black text-[#002C5F]">Immediate Control</p>
+            <p style="font-size:.7rem;color:#aaa;font-weight:600">Phase 1 · Week 1–2</p>
+          </div>
+        </div>
+        <ul class="space-y-3" id="phase1-list"></ul>
+      </div>
+      <div class="reveal card-hover rounded-2xl p-6 border-2 border-amber-300" style="background:#FFFBF0;animation-delay:.2s">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-3xl">⭐</span>
+          <div>
+            <p class="font-black text-[#002C5F]">Positive Review Surge</p>
+            <p style="font-size:.7rem;color:#aaa;font-weight:600">Phase 2 · Week 2–8</p>
+          </div>
+        </div>
+        <ul class="space-y-3" id="phase2-list"></ul>
+      </div>
+      <div class="reveal card-hover rounded-2xl p-6 border-2 border-green-300" style="background:#F0FBF4;animation-delay:.3s">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-3xl">🌱</span>
+          <div>
+            <p class="font-black text-[#002C5F]">Long-term SEO Equity</p>
+            <p style="font-size:.7rem;color:#aaa;font-weight:600">Phase 3 · Month 2–6</p>
+          </div>
+        </div>
+        <ul class="space-y-3" id="phase3-list"></ul>
+      </div>
+    </div>
+
+    <!-- Keywords -->
+    <div class="reveal mb-14">
+      <h3 class="font-black text-[#002C5F] text-xl mb-2">Positive Review SEO Keyword Bank</h3>
+      <p style="color:#888;font-size:.88rem;margin-bottom:24px">Include these naturally in genuine positive reviews to directly counteract damage and boost ORM signals.</p>
+      <div id="keyword-groups" class="grid md:grid-cols-2 gap-8"></div>
+    </div>
+
+    <!-- Owner template -->
+    <div class="reveal rounded-2xl overflow-hidden border-2" style="border-color:rgba(0,44,95,.15)">
+      <div class="grad-navy px-6 py-4">
+        <p class="text-white font-black">📝 Recommended Owner Response Template</p>
+        <p style="color:rgba(255,255,255,.5);font-size:.75rem">Personalise with the customer's name. Each owner reply is indexed by Google — it's free SEO.</p>
+      </div>
+      <div style="background:#F7F9FC;padding:24px">
+        <pre class="bg-white rounded-xl border border-gray-100 p-5 overflow-x-auto" style="font-family:'Manrope',sans-serif;font-size:.82rem;color:#444;line-height:1.8;white-space:pre-wrap">Dear [Reviewer Name],
+
+Thank you for taking the time to share your experience. We sincerely apologise that we fell short of your expectations — particularly around the delivery timeline and communication.
+
+We want to assure you that [specific action: e.g. your vehicle has been allocated / we are prioritising your case]. A member of our senior team will contact you within 24 hours to resolve this directly.
+
+At Lotus Hyundai, every customer's satisfaction is our top priority. We take full ownership of this situation and are committed to making it right.
+
+Warm regards,
+[Name], Customer Experience Manager
+Lotus Hyundai, Erode</pre>
+        <p style="font-size:.74rem;color:#aaa;margin-top:10px">✅ Avoids being defensive · Takes ownership · Promises action · Reinforces brand name for SEO</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ FOOTER ═══════════════════════════════════ -->
+<footer class="grad-navy py-10">
+  <div class="max-w-6xl mx-auto px-6 text-center">
+    <svg width="40" height="28" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 12px;opacity:.6">
+      <path d="M60 5C30.2 5 6 22.9 6 45C6 67.1 30.2 75 60 75C89.8 75 114 67.1 114 45C114 22.9 89.8 5 60 5ZM60 71C32.4 71 10 59.5 10 45C10 30.5 32.4 19 60 19C87.6 19 110 30.5 110 45C110 59.5 87.6 71 60 71Z" fill="white"/>
+      <path d="M38 25V65M82 25V65M38 45H82" stroke="white" stroke-width="9" stroke-linecap="round"/>
+    </svg>
+    <p class="text-white font-black text-base mb-1">LOTUS HYUNDAI</p>
+    <p style="color:rgba(255,255,255,.4);font-size:.75rem;margin-bottom:8px">Erode · Perundurai Road · Reputation Intelligence Report 2025</p>
+    <p style="color:rgba(255,255,255,.25);font-size:.7rem">This report is a forensic analysis of publicly visible Google Maps reviews, intended for internal ORM strategy purposes only.</p>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════ MODAL ═══════════════════════════════════ -->
+<div id="modal-overlay" onclick="closeModal()">
+  <div id="modal-box" class="modal-in" onclick="event.stopPropagation()">
+    <div id="modal-header" class="grad-navy px-5 py-4 flex items-center justify-between">
+      <div>
+        <p id="modal-name" class="text-white font-bold"></p>
+        <p id="modal-sub" style="color:rgba(255,255,255,.55);font-size:.72rem"></p>
+      </div>
+      <button onclick="closeModal()" class="text-white text-2xl leading-none" style="opacity:.6;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">×</button>
+    </div>
+    <img id="modal-img" src="" alt="" class="w-full object-contain" style="background:#1a1a2e"/>
+    <div class="px-5 py-4 flex items-center gap-3 flex-wrap">
+      <span id="modal-tag" class="pill"></span>
+      <span id="modal-flag" style="font-size:.75rem;color:#888"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ DATA ═══════════ */
+const reviews = [
+  {id:1, img:"images/r01.webp", reviewer:"Praveen Anandhan",      rvs:4,  likes:8,  tag:"Real Victim",        tc:"background:#EFF6FF;color:#1D4ED8", flag:"🔗 Cross-referenced with 'prawin's view'"},
+  {id:2, img:"images/r02.webp", reviewer:"Nivetha Narayanan",     rvs:10, likes:7,  tag:"Coordinated",        tc:"background:#FFFBEB;color:#B45309", flag:"⏱ Posted in same 5-month cluster"},
+  {id:3, img:"images/r03.webp", reviewer:"Dinesh Ramu",           rvs:2,  likes:9,  tag:"Low Activity",       tc:"background:#FEF2F2;color:#B91C1C", flag:"🆕 Only 2 total reviews — likely new account"},
+  {id:4, img:"images/r04.webp", reviewer:"Revathy Chokkalingam",  rvs:6,  likes:8,  tag:"Duplicate Account",  tc:"background:#FEF2F2;color:#B91C1C", flag:"⚠ Same name appears on TWO accounts"},
+  {id:5, img:"images/r05.webp", reviewer:"Revathy Chokkalingam",  rvs:1,  likes:9,  tag:"Duplicate Account",  tc:"background:#FEF2F2;color:#B91C1C", flag:"⚠ 1-review account — likely created for campaign"},
+  {id:6, img:"images/r06.webp", reviewer:"Syed Irfan",            rvs:4,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting on behalf of a friend"},
+  {id:7, img:"images/r07.webp", reviewer:"Prawin's View",         rvs:2,  likes:9,  tag:"Social Network Link", tc:"background:#EEF2FF;color:#3730A3", flag:"🔗 Explicitly names 'my friend praveen'"},
+  {id:8, img:"images/r08.webp", reviewer:"ARUN KUMAR R",          rvs:3,  likes:8,  tag:"Exact Duplicate",    tc:"background:#FEF2F2;color:#B91C1C", flag:"🔴 Word-for-word copy of review #14"},
+  {id:9, img:"images/r09.webp", reviewer:"Manikandan G R",        rvs:17, likes:8,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
+  {id:10,img:"images/r10.webp", reviewer:"Hari Haran",            rvs:4,  likes:5,  tag:"Organic Complaint",  tc:"background:#F0FDF4;color:#15803D", flag:"✅ Unique complaint — different issue"},
+  {id:11,img:"images/r11.webp", reviewer:"Viji Manickam",         rvs:9,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
+  {id:12,img:"images/r12.webp", reviewer:"Zubair Ahmed",          rvs:3,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
+  {id:13,img:"images/r13.webp", reviewer:"Arunkumar Pattusamy",   rvs:7,  likes:6,  tag:"Organic Complaint",  tc:"background:#F0FDF4;color:#15803D", flag:"✅ Different complaint — refund/registration"},
+  {id:14,img:"images/r14.webp", reviewer:"ARUN KUMAR R (copy)",   rvs:3,  likes:8,  tag:"Exact Duplicate",    tc:"background:#FEF2F2;color:#B91C1C", flag:"🔴 Same text as review #8"},
+];
+
+const analysisCards = [
+  {n:"01",icon:"⏱",sev:"HIGH",sc:"background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA",
+   title:"Timing Cluster — All Reviews in Same 5-Month Window",
+   text:`Every single review (except Hari Haran's) was posted "5 months ago" — all appearing in the same narrow timeframe. Organic review feedback is distributed over months or years. A tight temporal cluster of 12+ reviews all appearing simultaneously is a textbook signal of a coordinated campaign launch.`,
+   pts:["12 of 14 reviews: \"5 months ago\"","1 review: \"6 months ago\" (Hari Haran — edited, different issue)","1 review: \"3 months ago\" (Arunkumar — different complaint)","Zero organic time distribution"]},
+  {n:"02",icon:"👥",sev:"CRITICAL",sc:"background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA",
+   title:"ARUN KUMAR R — Exact Duplicate Review Posted Twice",
+   text:`ARUN KUMAR R (3 reviews) appears TWICE with identical text: "The customer service is extremely disappointing. They provide support only until the booking is completed, after which they cite delivery delays and even suggest changing to another model." Word-for-word copy across two separate screenshots.`,
+   pts:["Review #8 and Review #14 are identical","Same reviewer name, same total review count (3)","Copy-paste behaviour or multi-account posting"]},
+  {n:"03",icon:"🔗",sev:"HIGH",sc:"background:#FFFBEB;color:#B45309;border:1px solid #FDE68A",
+   title:"\"My Friend Praveen\" — Explicit Social Network Cross-Reference",
+   text:`Prawin's View writes: "My friend praveen is in too fear and worry, whether they will deliver correctly." Praveen Anandhan is ALSO a reviewer here (review #1), who paid full amount for an Exter Smart Amt on 16.11.2025. This directly proves a real-world social circle organised a coordinated Google review campaign.`,
+   pts:["Reviewer 'Prawin's View' explicitly names 'praveen'","Praveen Anandhan = reviewer #1 with real delivery complaint","Confirms social-circle organisation of reviews","Prawin has only 2 total reviews — account created for this"]},
+  {n:"04",icon:"⚠",sev:"HIGH",sc:"background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA",
+   title:"Revathy Chokkalingam — Two Accounts, Same Name, Same Complaint",
+   text:`Revathy Chokkalingam appears twice: once as a 6-review account and once as a 1-review account. Both carry virtually identical text about customer service stopping after booking and being pressured to change the model. The 1-review account suggests it was created specifically for this campaign.`,
+   pts:["Account A: 6 reviews — older active account","Account B: 1 review — likely created for this campaign","Near-identical complaint wording across both","Owner replied only to Account B"]},
+  {n:"05",icon:"👨‍👩‍👧",sev:"MEDIUM",sc:"background:#FFFBEB;color:#B45309;border:1px solid #FDE68A",
+   title:"The \"My Sister\" Narrative Pattern — Three Different Reviewers",
+   text:`Three unrelated reviewers — Manikandan G R, Viji Manickam, and Zubair Ahmed — all independently used the phrase "my sister" to describe their connection to the affected customer. This identical narrative device across people with different surnames strongly suggests a shared text template was circulated in a WhatsApp/Telegram group.`,
+   pts:["Manikandan G R: \"My sister completed the full payment...\"","Viji Manickam: \"My sister ordered a car...\"","Zubair Ahmed: \"...my sister was pressured...\"","Different surnames, photos — same templated language"]},
+  {n:"06",icon:"❤️",sev:"MEDIUM",sc:"background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE",
+   title:"Like Count Uniformity — Artificially Boosted Engagement",
+   text:`In genuine review sets, likes vary dramatically (0 to 50+). These 14 reviews show an unnaturally tight band of 7–9 likes each. The most likely explanation: the same group of ~9 people liked every review in the campaign to artificially boost their ranking and visibility on Google Maps.`,
+   pts:["Range: 5–9 likes (Hari Haran lowest at 5 — different circle)","11 reviews have exactly 7, 8, or 9 likes","Standard deviation ~0.9 — extremely low for organic reviews","Group of ~9 people likely cross-liked all reviews"]},
+];
+
+const phases = [
+  {id:"phase1-list", items:[
+    "Flag duplicate reviews (ARUN KUMAR R ×2, Revathy ×2) to Google Maps under 'Conflict of Interest'",
+    "Flag proxy reviews as 'Not a first-hand experience'",
+    "File formal complaint with Hyundai India Customer Support",
+    "Respond professionally to every 1-star review with the template below"
+  ]},
+  {id:"phase2-list", items:[
+    "Deploy post-delivery SMS/WhatsApp review request with direct Google Maps link",
+    "Incentivise staff: bonus for every 5-star review from verified buyers",
+    "Set up in-showroom QR code at delivery point — ask for review at the moment of joy",
+    "Target 15+ new 5-star reviews in month 1, then 10/month ongoing"
+  ]},
+  {id:"phase3-list", items:[
+    "Create Google Business Profile posts with positive keywords weekly",
+    "Launch local SEO landing page targeting 'Hyundai dealer Erode honest trustworthy'",
+    "Encourage reviews on Justdial, CarDekho, and TeamBHP",
+    "Publish 2–3 customer delivery ceremony videos/reels monthly on Google Maps"
+  ]},
+];
+
+const kwGroups = [
+  {label:"🚗 Delivery Keywords",c:"background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE",
+   words:["on-time delivery","delivered as promised","exact delivery date","smooth handover","no delays","delivered the same colour I chose","quick registration","fast RC delivery"]},
+  {label:"🤝 Customer Service Keywords",c:"background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0",
+   words:["helpful staff","transparent communication","honest dealership","excellent after-sales","responsive support","no pressure sales","professional team","trustworthy dealer"]},
+  {label:"📍 Local SEO Keywords",c:"background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE",
+   words:["best Hyundai dealer Erode","Hyundai Perundurai Road","Lotus Hyundai Erode review","Hyundai Exter Erode","car dealer Erode trustworthy","Hyundai showroom Erode best"]},
+  {label:"💬 Brand Sentiment Keywords",c:"background:#FFFBEB;color:#B45309;border:1px solid #FDE68A",
+   words:["recommend Lotus Hyundai","happy customer","excellent experience","five stars","great Hyundai service centre","Lotus Hyundai reliable","best in Erode"]},
+];
+
+/* ═══════════ BUILD DOM ═══════════ */
+// Progress bars
+const pbData = [
+  {label:"Delivery delayed after full payment", pct:92, n:"11/14"},
+  {label:"Pressure to change model/colour",     pct:85, n:"11/14"},
+  {label:"Customer support stops post-booking", pct:64, n:"9/14"},
+  {label:"Posted on behalf of someone else",    pct:43, n:"6/14"},
+  {label:"Registration / refund issues",        pct:21, n:"3/14"},
+];
+const pbC = document.getElementById("pb-container");
+pbData.forEach(d => {
+  pbC.innerHTML += `
+  <div class="mb-4">
+    <div class="flex justify-between mb-1" style="font-size:.83rem">
+      <span style="color:#555;font-weight:500">${d.label}</span>
+      <span style="font-weight:700;color:#002C5F">${d.n}</span>
+    </div>
+    <div class="pb-track"><div class="pb-fill" data-pct="${d.pct}"></div></div>
+  </div>`;
+});
+
+// Review grid
+const grid = document.getElementById("review-grid");
+reviews.forEach((r,i) => {
+  const el = document.createElement("div");
+  el.className = "reveal card-hover bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer group";
+  el.style.animationDelay = `${(i%6)*0.08}s`;
+  el.innerHTML = `
+    <div class="relative overflow-hidden" style="background:#1a1a2e">
+      <img src="${r.img}" alt="Review by ${r.reviewer}" class="w-full object-contain transition-transform duration-300 group-hover:scale-105"/>
+      <div class="absolute inset-0 flex items-end p-3 opacity-0 group-hover:opacity-100 transition-opacity" style="background:linear-gradient(to top,rgba(0,0,0,.5),transparent)">
+        <span class="text-white" style="font-size:.8rem;font-weight:600">Click to expand 🔍</span>
+      </div>
+    </div>
+    <div class="px-4 py-3">
+      <div class="flex items-center justify-between mb-2">
+        <p style="font-weight:700;color:#002C5F;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.reviewer}</p>
+        <span style="font-size:.75rem;color:#aaa;flex-shrink:0;margin-left:8px">❤️ ${r.likes}</span>
+      </div>
+      <span class="pill" style="${r.tc}">${r.tag}</span>
+      <p style="font-size:.73rem;color:#999;margin-top:6px">${r.flag}</p>
+    </div>`;
+  el.addEventListener("click", () => openModal(r));
+  grid.appendChild(el);
+});
+
+// Analysis cards
+const ac = document.getElementById("analysis-cards");
+analysisCards.forEach(c => {
+  const el = document.createElement("div");
+  el.className = "reveal border border-gray-100 rounded-2xl overflow-hidden shadow-sm";
+  el.innerHTML = `
+    <div class="p-6 flex items-start gap-4">
+      <div class="flex-shrink-0 w-12 h-12 rounded-xl grad-navy flex items-center justify-center text-xl">${c.icon}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-3 mb-2">
+          <span style="font-size:.68rem;font-weight:900;color:#ccc;letter-spacing:.15em">#${c.n}</span>
+          <h3 style="font-weight:900;color:#002C5F;font-size:.95rem">${c.title}</h3>
+          <span class="pill" style="${c.sc}">${c.sev}</span>
+        </div>
+        <p style="color:#666;font-size:.84rem;line-height:1.7;margin-bottom:14px">${c.text}</p>
+        <div class="grid sm:grid-cols-2 gap-2">${c.pts.map(p=>`
+          <div class="flex items-start gap-2 rounded-lg px-3 py-2" style="background:#F7F9FC">
+            <span style="color:#00AAD2;margin-top:1px;flex-shrink:0">→</span>
+            <span style="font-size:.78rem;color:#555;font-weight:500">${p}</span>
+          </div>`).join("")}</div>
+      </div>
+    </div>`;
+  ac.appendChild(el);
+});
+
+// Evidence table
+const et = document.getElementById("evidence-table");
+reviews.forEach((r,i) => {
+  const tr = document.createElement("tr");
+  tr.style.borderTop = "1px solid #F3F4F6";
+  tr.style.background = i%2===0?"#fff":"rgba(247,249,252,.7)";
+  tr.innerHTML = `
+    <td class="px-4 py-3" style="font-weight:600;color:#002C5F">${r.reviewer}</td>
+    <td class="px-4 py-3 text-center hide-mobile" style="color:#666">${r.rvs}</td>
+    <td class="px-4 py-3 text-center" style="color:#666">❤️ ${r.likes}</td>
+    <td class="px-4 py-3"><span class="pill" style="${r.tc}">${r.tag}</span></td>
+    <td class="px-4 py-3 hide-mobile" style="color:#999;font-size:.76rem">${r.flag}</td>`;
+  tr.addEventListener("click", () => openModal(r));
+  et.appendChild(tr);
+});
+
+// Phases
+phases.forEach(p => {
+  const ul = document.getElementById(p.id);
+  p.items.forEach((item,i) => {
+    ul.innerHTML += `<li class="flex items-start gap-2.5">
+      <span class="flex-shrink-0 w-5 h-5 rounded-full bg-white flex items-center justify-center font-black" style="border:2px solid rgba(0,44,95,.2);font-size:.7rem;color:#002C5F;margin-top:1px">${i+1}</span>
+      <span style="font-size:.83rem;color:#444;line-height:1.55">${item}</span>
+    </li>`;
+  });
+});
+
+// Keywords
+const kwG = document.getElementById("keyword-groups");
+kwGroups.forEach(g => {
+  const div = document.createElement("div");
+  div.innerHTML = `<p style="font-weight:700;color:#002C5F;font-size:.9rem;margin-bottom:10px">${g.label}</p>
+    <div>${g.words.map(w=>`<span class="kw" style="${g.c}">${w}</span>`).join("")}</div>`;
+  kwG.appendChild(div);
+});
+
+/* ═══════════ MODAL ═══════════ */
+function openModal(r) {
+  document.getElementById("modal-name").textContent = r.reviewer;
+  document.getElementById("modal-sub").textContent = `${r.rvs} total reviews · ❤️ ${r.likes} likes`;
+  document.getElementById("modal-img").src = r.img;
+  document.getElementById("modal-img").alt = `Review by ${r.reviewer}`;
+  const tag = document.getElementById("modal-tag");
+  tag.textContent = r.tag;
+  tag.setAttribute("style", r.tc);
+  document.getElementById("modal-flag").textContent = r.flag;
+  const overlay = document.getElementById("modal-overlay");
+  overlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+  const box = document.getElementById("modal-box");
+  box.style.animation = "none";
+  box.offsetHeight;
+  box.style.animation = "modalIn .28s cubic-bezier(.22,1,.36,1) forwards";
+}
+function closeModal() {
+  document.getElementById("modal-overlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+document.addEventListener("keydown", e => { if(e.key==="Escape") closeModal(); });
+
+/* ═══════════ SCROLL HELPERS ═══════════ */
+function scrollTo(id) {
+  document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
+}
+
+/* ═══════════ INTERSECTION OBSERVER ═══════════ */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.classList.add("visible");
+      // Fire pb-fill animations
+      e.target.querySelectorAll(".pb-fill").forEach(el => {
+        el.style.width = el.dataset.pct + "%";
+      });
+      // Fire counter animations
+      e.target.querySelectorAll(".counter-inline").forEach(el => animateCounter(el));
+    }
+  });
+},{threshold:0.12});
+document.querySelectorAll(".reveal,.reveal-left,.reveal-right").forEach(el => observer.observe(el));
+
+// Hero counters (fire once visible)
+const heroObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      document.querySelectorAll(".counter").forEach(el => animateCounter(el));
+      heroObs.disconnect();
+    }
+  });
+},{threshold:0.5});
+const heroStat = document.querySelector(".counter");
+if(heroStat) heroObs.observe(heroStat.closest("div") || heroStat);
+
+function animateCounter(el) {
+  const to = parseInt(el.dataset.to);
+  if(isNaN(to)) return;
+  let start = 0;
+  const duration = 1600;
+  const step = to / (duration / (1000/60));
+  const timer = setInterval(() => {
+    start += step;
+    if(start >= to){ el.textContent = to; clearInterval(timer); }
+    else el.textContent = Math.floor(start);
+  }, 1000/60);
+}
+
+/* ═══════════ NAV ACTIVE ═══════════ */
+const navSections = ["overview","reviews","analysis","evidence","solution"];
+const navBtns = document.querySelectorAll(".nav-btn");
+const navObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const idx = navSections.indexOf(e.target.id);
+      if(idx !== -1) navBtns.forEach((b,i) => b.classList.toggle("active", i===idx));
+    }
+  });
+},{threshold:0.35});
+navSections.forEach(id => { const el=document.getElementById(id); if(el) navObs.observe(el); });
+
+/* ═══════════ CHARTS ═══════════ */
+// Pie chart
+new Chart(document.getElementById("pieChart"), {
+  type: "doughnut",
+  data: {
+    labels: ["Coordinated (social network)", "Organic complaints", "Exact duplicates"],
+    datasets:[{data:[10,2,2], backgroundColor:["#E63312","#22C55E","#F5A623"], borderWidth:2, borderColor:"#fff", hoverOffset:6}]
+  },
+  options:{responsive:true, plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed} reviews`}}}}
+});
+
+// Radar chart
+new Chart(document.getElementById("radarChart"), {
+  type:"radar",
+  data:{
+    labels:["Delivery Delay","Model Pressure","Post-booking Support","Staff Unprofessional","Payment Disputes","Registration Issues"],
+    datasets:[{label:"Intensity",data:[92,85,78,65,45,38],backgroundColor:"rgba(0,170,210,.18)",borderColor:"#00AAD2",borderWidth:2,pointBackgroundColor:"#00AAD2",pointRadius:4}]
+  },
+  options:{responsive:true,scales:{r:{min:0,max:100,ticks:{stepSize:20,font:{size:9}},pointLabels:{font:{size:10,weight:"600"}}}},plugins:{legend:{display:false}}}
+});
+
+// Bar chart
+const barColors = reviews.map((_,i)=>(i===7||i===13)?"#E63312":"#00AAD2");
+new Chart(document.getElementById("barChart"), {
+  type:"bar",
+  data:{
+    labels:reviews.map(r=>r.reviewer.split(" ")[0]),
+    datasets:[{label:"Likes",data:reviews.map(r=>r.likes),backgroundColor:barColors,borderRadius:4}]
+  },
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{min:0,max:12,ticks:{font:{size:10}}},x:{ticks:{font:{size:9},maxRotation:45}}}}
+});
+
+// Fire hero counters after load
+window.addEventListener("load",()=>{
+  setTimeout(()=>document.querySelectorAll(".counter").forEach(el=>animateCounter(el)),600);
+});
+</script>
+</body>
+</html>
