@@ -485,20 +485,20 @@ Lotus Hyundai, Erode</pre>
 <script>
 /* ═══════════ DATA ═══════════ */
 const reviews = [
-  {id:1, img:"images/r01.webp", reviewer:"Praveen Anandhan",      rvs:4,  likes:8,  tag:"Real Victim",        tc:"background:#EFF6FF;color:#1D4ED8", flag:"🔗 Cross-referenced with 'prawin's view'"},
-  {id:2, img:"images/r02.webp", reviewer:"Nivetha Narayanan",     rvs:10, likes:7,  tag:"Coordinated",        tc:"background:#FFFBEB;color:#B45309", flag:"⏱ Posted in same 5-month cluster"},
-  {id:3, img:"images/r03.webp", reviewer:"Dinesh Ramu",           rvs:2,  likes:9,  tag:"Low Activity",       tc:"background:#FEF2F2;color:#B91C1C", flag:"🆕 Only 2 total reviews — likely new account"},
-  {id:4, img:"images/r04.webp", reviewer:"Revathy Chokkalingam",  rvs:6,  likes:8,  tag:"Duplicate Account",  tc:"background:#FEF2F2;color:#B91C1C", flag:"⚠ Same name appears on TWO accounts"},
-  {id:5, img:"images/r05.webp", reviewer:"Revathy Chokkalingam",  rvs:1,  likes:9,  tag:"Duplicate Account",  tc:"background:#FEF2F2;color:#B91C1C", flag:"⚠ 1-review account — likely created for campaign"},
-  {id:6, img:"images/r06.webp", reviewer:"Syed Irfan",            rvs:4,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting on behalf of a friend"},
-  {id:7, img:"images/r07.webp", reviewer:"Prawin's View",         rvs:2,  likes:9,  tag:"Social Network Link", tc:"background:#EEF2FF;color:#3730A3", flag:"🔗 Explicitly names 'my friend praveen'"},
-  {id:8, img:"images/r08.webp", reviewer:"ARUN KUMAR R",          rvs:3,  likes:8,  tag:"Exact Duplicate",    tc:"background:#FEF2F2;color:#B91C1C", flag:"🔴 Word-for-word copy of review #14"},
-  {id:9, img:"images/r09.webp", reviewer:"Manikandan G R",        rvs:17, likes:8,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
-  {id:10,img:"images/r10.webp", reviewer:"Hari Haran",            rvs:4,  likes:5,  tag:"Organic Complaint",  tc:"background:#F0FDF4;color:#15803D", flag:"✅ Unique complaint — different issue"},
-  {id:11,img:"images/r11.webp", reviewer:"Viji Manickam",         rvs:9,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
-  {id:12,img:"images/r12.webp", reviewer:"Zubair Ahmed",          rvs:3,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
-  {id:13,img:"images/r13.webp", reviewer:"Arunkumar Pattusamy",   rvs:7,  likes:6,  tag:"Organic Complaint",  tc:"background:#F0FDF4;color:#15803D", flag:"✅ Different complaint — refund/registration"},
-  {id:14,img:"images/r14.webp", reviewer:"ARUN KUMAR R (copy)",   rvs:3,  likes:8,  tag:"Exact Duplicate",    tc:"background:#FEF2F2;color:#B91C1C", flag:"🔴 Same text as review #8"},
+  {id:1, img:"r01.webp", reviewer:"Praveen Anandhan",      rvs:4,  likes:8,  tag:"Real Victim",        tc:"background:#EFF6FF;color:#1D4ED8", flag:"🔗 Cross-referenced with 'prawin's view'"},
+  {id:2, img:"r02.webp", reviewer:"Nivetha Narayanan",     rvs:10, likes:7,  tag:"Coordinated",        tc:"background:#FFFBEB;color:#B45309", flag:"⏱ Posted in same 5-month cluster"},
+  {id:3, img:"r03.webp", reviewer:"Dinesh Ramu",           rvs:2,  likes:9,  tag:"Low Activity",       tc:"background:#FEF2F2;color:#B91C1C", flag:"🆕 Only 2 total reviews — likely new account"},
+  {id:4, img:"r04.webp", reviewer:"Revathy Chokkalingam",  rvs:6,  likes:8,  tag:"Duplicate Account",  tc:"background:#FEF2F2;color:#B91C1C", flag:"⚠ Same name appears on TWO accounts"},
+  {id:5, img:"r05.webp", reviewer:"Revathy Chokkalingam",  rvs:1,  likes:9,  tag:"Duplicate Account",  tc:"background:#FEF2F2;color:#B91C1C", flag:"⚠ 1-review account — likely created for campaign"},
+  {id:6, img:"r06.webp", reviewer:"Syed Irfan",            rvs:4,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting on behalf of a friend"},
+  {id:7, img:"r07.webp", reviewer:"Prawin's View",         rvs:2,  likes:9,  tag:"Social Network Link", tc:"background:#EEF2FF;color:#3730A3", flag:"🔗 Explicitly names 'my friend praveen'"},
+  {id:8, img:"r08.webp", reviewer:"ARUN KUMAR R",          rvs:3,  likes:8,  tag:"Exact Duplicate",    tc:"background:#FEF2F2;color:#B91C1C", flag:"🔴 Word-for-word copy of review #14"},
+  {id:9, img:"r09.webp", reviewer:"Manikandan G R",        rvs:17, likes:8,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
+  {id:10,img:"r10.webp", reviewer:"Hari Haran",            rvs:4,  likes:5,  tag:"Organic Complaint",  tc:"background:#F0FDF4;color:#15803D", flag:"✅ Unique complaint — different issue"},
+  {id:11,img:"r11.webp", reviewer:"Viji Manickam",         rvs:9,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
+  {id:12,img:"r12.webp", reviewer:"Zubair Ahmed",          rvs:3,  likes:7,  tag:"Proxy Reviewer",     tc:"background:#F5F3FF;color:#6D28D9", flag:"👥 Posting for 'my sister'"},
+  {id:13,img:"r13.webp", reviewer:"Arunkumar Pattusamy",   rvs:7,  likes:6,  tag:"Organic Complaint",  tc:"background:#F0FDF4;color:#15803D", flag:"✅ Different complaint — refund/registration"},
+  {id:14,img:"r14.webp", reviewer:"ARUN KUMAR R (copy)",   rvs:3,  likes:8,  tag:"Exact Duplicate",    tc:"background:#FEF2F2;color:#B91C1C", flag:"🔴 Same text as review #8"},
 ];
 
 const analysisCards = [
